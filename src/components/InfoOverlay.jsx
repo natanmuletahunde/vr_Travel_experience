@@ -21,8 +21,10 @@ export default function InfoOverlay({ destination, isVisible, onClose, isAudioPl
   useEffect(() => {
     if (!isVisible || !mountRef.current || !destination) return
 
-    const width = mountRef.current.clientWidth
-    const height = mountRef.current.clientHeight
+    console.log('Initializing InfoOverlay panorama for:', destination.name)
+
+    const width = mountRef.current.clientWidth || 800
+    const height = mountRef.current.clientHeight || 400
 
     // Scene setup
     const scene = new THREE.Scene()
@@ -37,17 +39,18 @@ export default function InfoOverlay({ destination, isVisible, onClose, isAudioPl
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     renderer.setSize(width, height)
     renderer.setPixelRatio(window.devicePixelRatio)
+    renderer.setClearColor(0x000000, 1)
     rendererRef.current = renderer
 
+    // Clear previous content
+    mountRef.current.innerHTML = ''
     mountRef.current.appendChild(renderer.domElement)
 
     // Create panoramic sphere
     const geometry = new THREE.SphereGeometry(500, 60, 40)
     geometry.scale(-1, 1, 1) // Flip to see from inside
 
-    const textureLoader = new THREE.TextureLoader()
-    
-    // Create fallback gradient if panorama fails to load
+    // Always create fallback texture first to ensure something displays
     const createFallbackTexture = () => {
       const canvas = document.createElement('canvas')
       canvas.width = 2048
@@ -79,30 +82,37 @@ export default function InfoOverlay({ destination, isVisible, onClose, isAudioPl
       return new THREE.CanvasTexture(canvas)
     }
 
-    textureLoader.load(
-      destination.panorama_url,
-      (texture) => {
-        const material = new THREE.MeshBasicMaterial({
-          map: texture,
-          side: THREE.DoubleSide
-        })
-        const sphere = new THREE.Mesh(geometry, material)
-        sphereRef.current = sphere
-        scene.add(sphere)
-      },
-      undefined,
-      (error) => {
-        console.warn('Error loading panorama, using fallback:', error)
-        const fallbackTexture = createFallbackTexture()
-        const material = new THREE.MeshBasicMaterial({
-          map: fallbackTexture,
-          side: THREE.DoubleSide
-        })
-        const sphere = new THREE.Mesh(geometry, material)
-        sphereRef.current = sphere
-        scene.add(sphere)
-      }
-    )
+    // Create initial material with fallback
+    const fallbackTexture = createFallbackTexture()
+    const material = new THREE.MeshBasicMaterial({
+      map: fallbackTexture,
+      side: THREE.DoubleSide
+    })
+    const sphere = new THREE.Mesh(geometry, material)
+    sphereRef.current = sphere
+    scene.add(sphere)
+
+    // Try to load real panorama
+    const textureLoader = new THREE.TextureLoader()
+    if (destination.panorama_url && !destination.panorama_url.includes('data:image/svg+xml')) {
+      textureLoader.load(
+        destination.panorama_url,
+        (texture) => {
+          console.log('Successfully loaded panorama texture')
+          const newMaterial = new THREE.MeshBasicMaterial({
+            map: texture,
+            side: THREE.DoubleSide
+          })
+          sphere.material = newMaterial
+        },
+        (progress) => {
+          console.log('Loading progress:', (progress.loaded / progress.total) * 100 + '%')
+        },
+        (error) => {
+          console.warn('Error loading panorama, using fallback:', error)
+        }
+      )
+    }
 
     // Auto-rotation
     const animate = () => {
@@ -144,17 +154,25 @@ export default function InfoOverlay({ destination, isVisible, onClose, isAudioPl
     }
   }, [])
 
-  const handlePlayPause = () => {
+  const handlePlayPause = async () => {
     const audio = audioRef.current
     if (!audio) return
 
-    if (isLocalAudioPlaying) {
-      audio.pause()
-    } else {
-      audio.play()
+    try {
+      if (isLocalAudioPlaying) {
+        audio.pause()
+        setIsLocalAudioPlaying(false)
+      } else {
+        await audio.play()
+        setIsLocalAudioPlaying(true)
+      }
+      onToggleAudio()
+    } catch (error) {
+      console.error('Audio play error:', error)
+      // Still toggle the state even if play fails
+      setIsLocalAudioPlaying(!isLocalAudioPlaying)
+      onToggleAudio()
     }
-    setIsLocalAudioPlaying(!isLocalAudioPlaying)
-    onToggleAudio()
   }
 
   const handleSeek = (e) => {

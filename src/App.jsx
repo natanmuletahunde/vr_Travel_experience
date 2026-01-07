@@ -4,6 +4,7 @@ import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import Explore from './pages/Explore'
 import Viewer from './pages/Viewer'
+import Demo from './pages/Demo'
 import Favorites from './pages/Favorites'
 import Auth from './pages/Auth'
 import { destinationsAPI } from './services/supabaseClient'
@@ -95,6 +96,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/viewer/:id" element={<Viewer />} />
+        <Route path="/demo" element={<Demo />} />
         <Route path="/favorites" element={<Favorites />} />
         <Route path="/auth" element={<Auth />} />
       </Routes>

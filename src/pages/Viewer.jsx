@@ -25,6 +25,13 @@ export default function Viewer() {
     loadDestination()
   }, [id])
 
+  // Auto-show info overlay for demo
+  useEffect(() => {
+    if (!loading && destination && window.location.pathname === '/demo') {
+      setShowInfo(true)
+    }
+  }, [loading, destination])
+
   useEffect(() => {
     if (destination && user) {
       checkIfFavorite()
@@ -43,11 +50,52 @@ export default function Viewer() {
   const loadDestination = async () => {
     try {
       setLoading(true)
-      const data = await destinationsAPI.getById(id)
+      
+      // If no ID (demo route), use first destination
+      const destinationId = id || '1'
+      const data = await destinationsAPI.getById(destinationId)
       setDestination(data)
     } catch (error) {
       console.error('Error loading destination:', error)
-      navigate('/explore')
+      
+      // For demo mode, create a fallback destination
+      if (window.location.pathname === '/demo') {
+        const fallbackDestination = {
+          id: 'demo-1',
+          name: 'Demo Destination',
+          country: 'Virtual Reality',
+          description: 'This is a demo destination showcasing the VR travel experience. Explore the panoramic view and test the audio controls.',
+          panorama_url: 'data:image/svg+xml;base64,' + btoa(`
+            <svg width="2048" height="1024" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:#00f5ff;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#b347ff;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <rect width="2048" height="1024" fill="url(#sky)"/>
+              <text x="1024" y="512" text-anchor="middle" font-size="72" fill="#fff" font-weight="bold">VR Travel Demo</text>
+              <text x="1024" y="580" text-anchor="middle" font-size="36" fill="#fff">360° Panoramic Experience</text>
+              <circle cx="300" cy="300" r="80" fill="#FFD700" opacity="0.8"/>
+              <circle cx="1748" cy="300" r="80" fill="#FF006E" opacity="0.8"/>
+            </svg>
+          `),
+          audio_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
+        }
+        setDestination(fallbackDestination)
+      } else {
+        // Try to get all destinations and use the first one
+        try {
+          const allDestinations = await destinationsAPI.getAll()
+          if (allDestinations.length > 0) {
+            setDestination(allDestinations[0])
+          } else {
+            navigate('/explore')
+          }
+        } catch (fallbackError) {
+          navigate('/explore')
+        }
+      }
     } finally {
       setLoading(false)
     }
@@ -154,6 +202,7 @@ export default function Viewer() {
       <div className="absolute top-24 left-6 z-40">
         <button
           onClick={() => setShowInfo(!showInfo)}
+          data-show-details="true"
           className="px-4 py-3 glass-dark rounded-lg hover:bg-white/20 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2"
         >
           <Info className="w-5 h-5 text-white" />
