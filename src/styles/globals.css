@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #16213e 100%);
+    color: #ffffff;
+    overflow-x: hidden;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .glass-dark {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .neon-border {
+    border: 2px solid transparent;
+    background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(179, 71, 255, 0.1));
+    background-clip: padding-box;
+    position: relative;
+  }
+
+  .neon-border::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(135deg, #00f5ff, #b347ff, #ff006e);
+    border-radius: inherit;
+    z-index: -1;
+  }
+
+  .btn-primary {
+    @apply px-6 py-3 bg-gradient-to-r from-neon-blue to-neon-purple text-white font-semibold rounded-lg transform transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-neon-blue/50;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 glass text-white font-semibold rounded-lg transform transition-all duration-300 hover:bg-white/20 hover:scale-105;
+  }
+
+  .card-glow {
+    @apply glass rounded-xl p-6 transform transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-neon-purple/30;
+  }
+}
