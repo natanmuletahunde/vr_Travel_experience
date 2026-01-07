@@ -150,6 +150,19 @@ export default function Viewer() {
         </div>
       </div>
 
+      {/* Info Button - Enhanced */}
+      <div className="absolute top-24 left-6 z-40">
+        <button
+          onClick={() => setShowInfo(!showInfo)}
+          className="px-4 py-3 glass-dark rounded-lg hover:bg-white/20 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2"
+        >
+          <Info className="w-5 h-5 text-white" />
+          <span className="text-white font-medium">
+            {showInfo ? 'Hide' : 'Show'} Details
+          </span>
+        </button>
+      </div>
+
       {/* Info Overlay */}
       <InfoOverlay
         destination={destination}

@@ -1,103 +1,56 @@
-Email address "natan@gmail.com" is invalid  
+import React from 'react'
+import { X, Volume2, VolumeX } from 'lucide-react'
 
+export default function InfoOverlay({ destination, isVisible, onClose, isAudioPlaying, onToggleAudio }) {
+  if (!isVisible || !destination) return null
 
-in my console it say this 
-POST
-https://utphgcjauyjypyhbaakv.supabase.co/auth/v1/signup
-[HTTP/2 400  372ms]
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      
+      <div className="relative glass-dark rounded-2xl p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto animate-float">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 glass rounded-full hover:bg-white/20 transition-colors"
+        >
+          <X className="w-5 h-5 text-white" />
+        </button>
 
-	
-POST
-	https://utphgcjauyjypyhbaakv.supabase.co/auth/v1/signup
-Status
-400
-VersionHTTP/2
-Transferred1.19 kB (89 B size)
-Referrer Policystrict-origin-when-cross-origin
-Request PriorityHighest
-DNS ResolutionSystem
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-neon-blue to-neon-purple bg-clip-text text-transparent">
+              {destination.name}
+            </h2>
+            <p className="text-gray-400 mt-2">{destination.country}</p>
+          </div>
 
-	
-access-control-allow-credentials
-	true
-access-control-allow-origin
-	http://localhost:5173
-access-control-expose-headers
-	X-Total-Count, Link, X-Supabase-Api-Version
-alt-svc
-	h3=":443"; ma=86400
-cf-cache-status
-	DYNAMIC
-cf-ray
-	9ba1c867fee7e220-MRS
-content-length
-	89
-content-type
-	application/json
-date
-	Wed, 07 Jan 2026 07:36:12 GMT
-sb-gateway-version
-	1
-sb-project-ref
-	utphgcjauyjypyhbaakv
-sb-request-id
-	019b9762-7d01-7605-adf4-2a756df60d9b
-server
-	cloudflare
-set-cookie
-	__cf_bm=YF9MCEYNpkJJVFkcPXWFf0i51o3xRGRKvdjwrfBuEwU-1767771372-1.0.1.1-xruR8gbZ9Qm7TW2wE1WQtgycF48bDQqdPUgXYtdVuC_JoYsDJGqBR6m7MAUXwBnyasFfStJM_lkDHHV9M7uXfvGJPwribkSEy7gQF6Jkb2gukKBhIeVXL9AMqV0kLHz1; path=/; expires=Wed, 07-Jan-26 08:06:12 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
-strict-transport-security
-	max-age=31536000; includeSubDomains; preload
-vary
-	Origin, Accept-Encoding
-x-content-type-options
-	nosniff
-x-envoy-attempt-count
-	1
-x-envoy-upstream-service-time
-	92
-X-Firefox-Spdy
-	h2
-x-sb-error-code
-	email_address_invalid
-x-supabase-api-version
-	2024-01-01
-	
-Accept
-	*/*
-Accept-Encoding
-	gzip, deflate, br, zstd
-Accept-Language
-	en-US,en;q=0.5
-apikey
-	eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0cGhnY2phdXlqeXB5aGJhYWt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2NzQzMTcsImV4cCI6MjA4MzI1MDMxN30.pFnM_NhHHs063bcfgox1tH4HPZ7fFIVAJ7EY4dZbmd4
-Authorization
-	Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0cGhnY2phdXlqeXB5aGJhYWt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2NzQzMTcsImV4cCI6MjA4MzI1MDMxN30.pFnM_NhHHs063bcfgox1tH4HPZ7fFIVAJ7EY4dZbmd4
-Connection
-	keep-alive
-Content-Length
-	135
-Content-Type
-	application/json;charset=UTF-8
-Host
-	utphgcjauyjypyhbaakv.supabase.co
-Origin
-	http://localhost:5173
-Priority
-	u=0
-Referer
-	http://localhost:5173/
-Sec-Fetch-Dest
-	empty
-Sec-Fetch-Mode
-	cors
-Sec-Fetch-Site
-	cross-site
-TE
-	trailers
-User-Agent
-	Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0
-X-Client-Info
-	supabase-js-web/2.89.0
-X-Supabase-Api-Version
-	2024-01-01     
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-xl font-semibold text-white mb-2">About this place</h3>
+              <p className="text-gray-300 leading-relaxed">{destination.description}</p>
+            </div>
+
+            {destination.audio_url && (
+              <div className="flex items-center justify-between p-4 glass rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <Volume2 className="w-5 h-5 text-neon-blue" />
+                  <span className="text-gray-300">Audio narration available</span>
+                </div>
+                <button
+                  onClick={onToggleAudio}
+                  className="p-2 glass rounded-full hover:bg-white/20 transition-colors"
+                >
+                  {isAudioPlaying ? (
+                    <VolumeX className="w-5 h-5 text-white" />
+                  ) : (
+                    <Volume2 className="w-5 h-5 text-white" />
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

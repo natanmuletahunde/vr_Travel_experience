@@ -34,7 +34,7 @@ const sampleDestinations = [
         <circle cx="1748" cy="300" r="50" fill="#FFD700"/>
       </svg>
     `),
-    audio_url: null
+    audio_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
   },
   {
     id: '2',

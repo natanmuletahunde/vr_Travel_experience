@@ -129,7 +129,7 @@ export default function VRScene({ panoramaUrl, onLoadingChange }) {
   }
 
   return (
-    <div className="relative w-full h-screen">
+    <div className="relative w-full h-screen z-10">
       <div 
         ref={mountRef} 
         className="w-full h-full"
