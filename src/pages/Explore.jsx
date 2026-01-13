@@ -2,18 +2,38 @@ import React, { useState, useEffect } from 'react'
 import { destinationsAPI } from '../services/supabaseClient'
 import DestinationCard from '../components/DestinationCard'
 import Loader from '../components/Loader'
+import { useAuth } from '../hooks/useAuth'
 import { Search, Filter } from 'lucide-react'
 
 export default function Explore() {
+  const { user, toggleFavorite, checkFavorite } = useAuth()
   const [destinations, setDestinations] = useState([])
   const [filteredDestinations, setFilteredDestinations] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCountry, setSelectedCountry] = useState('all')
-
+  const [favorites, setFavorites] = useState({})
   useEffect(() => {
     loadDestinations()
   }, [])
+
+  useEffect(() => {
+    checkFavoritesForDestinations()
+}, [filteredDestinations, user])
+
+  const checkFavoritesForDestinations = async () => {
+    if (!user || filteredDestinations.length === 0) {
+      // Clear favorites if user logs out
+      setFavorites({})
+      return
+    }
+    
+    const favoriteStatus = {}
+    for (const destination of filteredDestinations) {
+      favoriteStatus[destination.id] = await checkFavorite(destination.id)
+    }
+    setFavorites(favoriteStatus)
+  }
 
   useEffect(() => {
     filterDestinations()
@@ -35,7 +55,7 @@ export default function Explore() {
     let filtered = destinations
 
     if (searchTerm) {
-      filtered = filtered.filter(dest => 
+      filtered = filtered.filter(dest =>
         dest.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         dest.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
         dest.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -47,6 +67,29 @@ export default function Explore() {
     }
 
     setFilteredDestinations(filtered)
+  }
+
+  const handleToggleFavorite = async (destinationId) => {
+    if (!user) {
+      // Redirect to auth if not logged in
+      window.location.href = '/auth'
+      return
+    }
+
+    try {
+      const { error } = await toggleFavorite(destinationId)
+      if (error) {
+        console.error('Error toggling favorite:', error)
+      } else {
+        // Update local state
+        setFavorites(prev => ({
+          ...prev,
+          [destinationId]: !prev[destinationId]
+        }))
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+    }
   }
 
   const countries = [...new Set(destinations.map(dest => dest.country))]
@@ -122,6 +165,8 @@ export default function Explore() {
               <DestinationCard
                 key={destination.id}
                 destination={destination}
+                isFavorite={favorites[destination.id] || false}
+                onToggleFavorite={handleToggleFavorite}
               />
             ))}
           </div>
